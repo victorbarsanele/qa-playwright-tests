@@ -8,9 +8,22 @@ import { APIRequestContext, APIResponse } from '@playwright/test';
 export class ProductsApi {
     constructor(private request: APIRequestContext) {}
 
-    async getProductsList(): Promise<unknown> {
-        const response = await this.request.get('/api/productsList');
-        return this.readJson<unknown>(response);
+    async getProductsList(retries = 3, delayMs = 2000): Promise<unknown> {
+        let lastError: unknown;
+        for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+                const response = await this.request.get('/api/productsList');
+                return this.readJson<unknown>(response);
+            } catch (error) {
+                lastError = error;
+                if (attempt < retries) {
+                    await new Promise((resolve) =>
+                        setTimeout(resolve, delayMs),
+                    );
+                }
+            }
+        }
+        throw lastError;
     }
 
     async getBrandsList(): Promise<unknown> {

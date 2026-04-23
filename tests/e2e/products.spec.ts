@@ -31,14 +31,19 @@ test.describe('Products Tests', () => {
         page,
     }) => {
         const productsPage = new ProductsPage(page);
-
-        await productsPage.goToProductsPage();
-        await page.locator('a[href="#Women"]').first().click({ force: true });
-        await page
+        const dressCategoryLink = page
             .locator('a[href*="/category_products/"]')
             .filter({ hasText: /Dress/i })
-            .first()
-            .click({ force: true });
+            .first();
+
+        await productsPage.goToProductsPage();
+        const dressCategoryHref = await dressCategoryLink.getAttribute('href');
+
+        if (!dressCategoryHref) {
+            throw new Error('Dress category link href was not found');
+        }
+
+        await page.goto(dressCategoryHref);
 
         await expect(page).toHaveURL(/\/category_products\//);
         await expect(
