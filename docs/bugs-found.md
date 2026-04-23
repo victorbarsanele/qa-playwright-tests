@@ -1,0 +1,36 @@
+﻿# Bugs Found
+
+## Template
+
+| ID      | Date       | Area                    | Environment        | Severity                 | Repro Steps          | Expected | Actual | Status                 | Owner |
+| ------- | ---------- | ----------------------- | ------------------ | ------------------------ | -------------------- | -------- | ------ | ---------------------- | ----- |
+| BUG-XXX | YYYY-MM-DD | Auth/Register/Login/API | Local/CI + browser | Low/Medium/High/Critical | 1. ... 2. ... 3. ... | ...      | ...    | Open/In Progress/Fixed | @name |
+
+## Logged Issues
+
+| ID      | Date       | Area                         | Environment      | Severity | Repro Steps                                                                                                 | Expected                                                     | Actual                                                                                                            | Status           | Owner   |
+| ------- | ---------- | ---------------------------- | ---------------- | -------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | ---------------- | ------- |
+| BUG-001 | 2026-04-14 | Register UI validation       | Local + Chromium | Medium   | 1. Navigate to /login 2. Complete step 1 3. In step 2 run name/email blank tests using step 1 locators      | Tests should assert validation on visible fields             | Test timed out waiting for non-existent `signup-name`/`signup-email` locators in step 2                           | Fixed            | QA Team |
+| BUG-002 | 2026-04-14 | Register UI email validation | Local + Chromium | Medium   | 1. Navigate to step 2 account info 2. Attempt to clear step 2 email field                                   | Test should validate required/format in correct form step    | Step 2 email input is disabled; fill attempts timed out                                                           | Fixed            | QA Team |
+| BUG-003 | 2026-04-23 | API                          | Local + Chromium | Low      | 1. Call AutomationExercise API endpoints for success and failure cases 2. Inspect HTTP status and JSON body | HTTP status should reflect actual API outcome                | API always returns HTTP 200; real outcome is stored in `json.responseCode`, so `status()` alone is misleading     | Known Limitation | QA Team |
+| BUG-004 | 2026-04-23 | E2E / Products / Cart        | Local + Chromium | Medium   | 1. Open products/cart flows repeatedly 2. Trigger add-to-cart or cart-navigation clicks during ad display   | Product and cart actions should be interactable consistently | Ad overlays/popups intermittently block clicks on product cards and cart buttons, causing unrelated test failures | Mitigated        | QA Team |
+
+---
+
+## Bugs Encontrados (Versão em Português - Brasil)
+
+## Modelo
+
+| ID      | Data       | Area                    | Ambiente           | Severidade               | Passos de Reprodução     | Esperado | Atual | Status                 | Responsável |
+| ------- | ---------- | ----------------------- | ------------------ | ------------------------ | ------------------------ | -------- | ----- | ---------------------- | ----------- |
+| BUG-XXX | AAAA-MM-DD | Auth/Register/Login/API | Local/CI + browser | Low/Medium/High/Critical | 1. ... 2. ... 3. ...     | ...      | ...   | Open/In Progress/Fixed | @name       |
+
+## Itens Registrados
+
+| ID      | Data       | Area                         | Ambiente         | Severidade | Passos de Reprodução                                                                                          | Esperado                                                   | Atual                                                                                                              | Status            | Responsável |
+| ------- | ---------- | ---------------------------- | ---------------- | ---------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------- | ----------- |
+| BUG-001 | 2026-04-14 | Validação UI de cadastro     | Local + Chromium | Medium     | 1. Navegar para /login 2. Completar etapa 1 3. Na etapa 2 executar testes de nome/email em branco com locators da etapa 1 | Testes deveriam validar campos visíveis no formulario correto | Timeout aguardando locators `signup-name`/`signup-email` que não existem na etapa 2                               | Corrigido         | QA Team     |
+| BUG-002 | 2026-04-14 | Validação de email no cadastro UI | Local + Chromium | Medium | 1. Navegar para etapa 2 de informações da conta 2. Tentar limpar campo de email da etapa 2                    | Teste deveria validar obrigatoriedade/formato no passo correto | Campo de email da etapa 2 e desabilitado; tentativas de preenchimento geraram timeout                               | Corrigido         | QA Team     |
+| BUG-003 | 2026-04-23 | API                          | Local + Chromium | Low        | 1. Chamar endpoints da API AutomationExercise para casos de sucesso e falha 2. Inspecionar status HTTP e JSON | Status HTTP deveria refletir o resultado real da API         | API sempre retorna HTTP 200; o resultado real fica em `json.responseCode`, portanto `status()` sozinho engana      | Limitação Conhecida | QA Team   |
+| BUG-004 | 2026-04-23 | E2E / Produtos / Carrinho    | Local + Chromium | Medium     | 1. Abrir fluxos de produtos/carrinho repetidamente 2. Acionar cliques durante exibicao de anuncios            | Ações de produto/carrinho deveriam ser sempre clicaveis      | Overlays/popups de anuncios bloqueiam cliques em cards e botoes do carrinho, causando falhas não relacionadas      | Mitigado          | QA Team     |
+

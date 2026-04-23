@@ -1,0 +1,25 @@
+{
+    "name": "qa-playwright-tests",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "npx playwright test",
+        "test:auth:smoke": "npx playwright test tests/e2e/auth/login.spec.ts tests/e2e/auth/register.spec.ts tests/api/auth.api.spec.ts --project=chromium",
+        "test:full:chromium": "npx playwright test --project=chromium",
+        "test:full": "npx playwright test",
+        "test:api:auth": "npx playwright test tests/api/auth.api.spec.ts",
+        "test:auth:e2e": "npx playwright test tests/e2e/auth/login.spec.ts tests/e2e/auth/register.spec.ts",
+        "test:shop:e2e": "npx playwright test tests/e2e/shop/products.spec.ts tests/e2e/shop/cart.spec.ts"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "commonjs",
+    "devDependencies": {
+        "@axe-core/playwright": "^4.11.1",
+        "@faker-js/faker": "^10.4.0",
+        "@playwright/test": "^1.59.1",
+        "@types/node": "^25.6.0"
+    }
+}
