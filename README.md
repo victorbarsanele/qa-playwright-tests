@@ -1,10 +1,15 @@
 ﻿# QA Playwright Tests
 
+**Language / Idioma:** [🇺🇸 English](#qa-playwright-tests) · [🇧🇷 Português (Brasil)](#versão-em-português-brasil)
+
+---
+
 End-to-end test suite for Automation Exercise using Playwright + TypeScript.
 
 ## CI Status
 
 [![Playwright Tests](https://github.com/victorbarsanele/qa-playwright-tests/actions/workflows/playwright.yml/badge.svg)](https://github.com/victorbarsanele/qa-playwright-tests/actions/workflows/playwright.yml)
+[![Test Report](https://img.shields.io/badge/report-live-blue)](https://victorbarsanele.github.io/qa-playwright-tests/)
 
 ## Project Structure
 
@@ -145,6 +150,7 @@ Suíte de testes end-to-end para Automation Exercise usando Playwright + TypeScr
 ## Status do CI
 
 [![Playwright Tests](https://github.com/victorbarsanele/qa-playwright-tests/actions/workflows/playwright.yml/badge.svg)](https://github.com/victorbarsanele/qa-playwright-tests/actions/workflows/playwright.yml)
+[![Test Report](https://img.shields.io/badge/report-live-blue)](https://victorbarsanele.github.io/qa-playwright-tests/)
 
 ## Estrutura do Projeto
 
