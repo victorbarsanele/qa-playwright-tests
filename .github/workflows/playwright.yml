@@ -2,6 +2,8 @@ name: Playwright Tests
 
 permissions:
     contents: read
+    pages: write
+    id-token: write
 
 concurrency:
     group: playwright-${{ github.workflow }}-${{ github.ref }}
@@ -56,12 +58,21 @@ jobs:
               run: npx playwright install --with-deps chromium
             - name: Run full suite (Chromium)
               run: npm run test:full:chromium
-            - uses: actions/upload-artifact@v4
-              if: failure() && !cancelled()
+              continue-on-error: true
+            - uses: actions/upload-pages-artifact@v3
               with:
-                  name: playwright-report-main-chromium
                   path: playwright-report/
-                  retention-days: 14
+
+    deploy:
+        needs: main_full_chromium
+        if: github.event_name == 'push'
+        runs-on: ubuntu-latest
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        steps:
+            - uses: actions/deploy-pages@v4
+              id: deployment
 
     nightly_cross_browser:
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
@@ -89,5 +100,3 @@ jobs:
                   name: playwright-report-nightly-${{ matrix.project }}
                   path: playwright-report/
                   retention-days: 14
-
-# TODO: Add Slack/Teams notification step when webhook is available
