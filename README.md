@@ -18,6 +18,12 @@ End-to-end test suite for Automation Exercise using Playwright + TypeScript.
 - `pages/` stores UI page objects
 - `requests/` stores API clients and helpers
 
+## Documentation
+
+- [Test Strategy](docs/test-strategy.md)
+- [Test Cases](docs/test-cases.md)
+- [Bugs Found](docs/bugs-found.md)
+
 ## Test Data Strategy
 
 This project uses a hybrid test-data model.
@@ -90,22 +96,22 @@ Run products/cart e2e specs:
 npm run test:shop:e2e
 ```
 
-Run the feature E2E specs added after auth:
+Run the feature E2E specs (products, cart, checkout):
 
 ```bash
-npx playwright test tests/e2e/products.spec.ts tests/e2e/cart.spec.ts tests/e2e/checkout.spec.ts --project=chromium
+npm run test:features:e2e
 ```
 
 Run products API specs:
 
 ```bash
-npx playwright test tests/api/products.api.spec.ts --project=chromium
+npm run test:api:products
 ```
 
 Run smoke specs:
 
 ```bash
-npx playwright test tests/smoke/smoke.spec.ts --project=chromium
+npm run test:smoke
 ```
 
 ## Script Matrix
@@ -115,7 +121,10 @@ npx playwright test tests/smoke/smoke.spec.ts --project=chromium
 - `npm run test:full`: Full suite on all configured projects
 - `npm run test:auth:e2e`: Auth UI journeys only
 - `npm run test:shop:e2e`: Shop UI journeys (products + cart)
+- `npm run test:features:e2e`: Feature UI journeys (products, cart, checkout) on Chromium
 - `npm run test:api:auth`: Auth API suite only
+- `npm run test:api:products`: Products API suite only
+- `npm run test:smoke`: Critical-path smoke suite on Chromium
 
 ## Implemented Coverage
 
@@ -148,6 +157,12 @@ Suíte de testes end-to-end para Automation Exercise usando Playwright + TypeScr
 - `tests/smoke/` contém cobertura de caminho crítico (smoke)
 - `pages/` armazena page objects da UI
 - `requests/` armazena clientes de API e utilitários
+
+## Documentação
+
+- [Estratégia de Testes](docs/test-strategy.md)
+- [Casos de Teste](docs/test-cases.md)
+- [Bugs Encontrados](docs/bugs-found.md)
 
 ## Estratégia de Dados de Teste
 
@@ -221,22 +236,22 @@ Executar specs E2E de produtos/carrinho:
 npm run test:shop:e2e
 ```
 
-Executar specs de features E2E adicionadas após auth:
+Executar specs de features E2E (produtos, carrinho, checkout):
 
 ```bash
-npx playwright test tests/e2e/products.spec.ts tests/e2e/cart.spec.ts tests/e2e/checkout.spec.ts --project=chromium
+npm run test:features:e2e
 ```
 
 Executar specs da API de produtos:
 
 ```bash
-npx playwright test tests/api/products.api.spec.ts --project=chromium
+npm run test:api:products
 ```
 
 Executar specs smoke:
 
 ```bash
-npx playwright test tests/smoke/smoke.spec.ts --project=chromium
+npm run test:smoke
 ```
 
 ## Matriz de Scripts
@@ -246,7 +261,10 @@ npx playwright test tests/smoke/smoke.spec.ts --project=chromium
 - `npm run test:full`: suíte completa em todos os projetos configurados
 - `npm run test:auth:e2e`: apenas jornadas de auth UI
 - `npm run test:shop:e2e`: jornadas de UI da loja (produtos + carrinho)
+- `npm run test:features:e2e`: jornadas de UI de features (produtos, carrinho, checkout) no Chromium
 - `npm run test:api:auth`: apenas suíte de auth API
+- `npm run test:api:products`: apenas suíte de products API
+- `npm run test:smoke`: suíte smoke de caminho crítico no Chromium
 
 ## Cobertura Implementada
 

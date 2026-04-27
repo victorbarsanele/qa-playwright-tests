@@ -9,8 +9,11 @@
         "test:full:chromium": "npx playwright test --project=chromium",
         "test:full": "npx playwright test",
         "test:api:auth": "npx playwright test tests/api/auth.api.spec.ts",
+        "test:api:products": "npx playwright test tests/api/products.api.spec.ts",
         "test:auth:e2e": "npx playwright test tests/e2e/auth/login.spec.ts tests/e2e/auth/register.spec.ts",
-        "test:shop:e2e": "npx playwright test tests/e2e/shop/products.spec.ts tests/e2e/shop/cart.spec.ts"
+        "test:shop:e2e": "npx playwright test tests/e2e/shop/products.spec.ts tests/e2e/shop/cart.spec.ts",
+        "test:features:e2e": "npx playwright test tests/e2e/products.spec.ts tests/e2e/cart.spec.ts tests/e2e/checkout.spec.ts --project=chromium",
+        "test:smoke": "npx playwright test tests/smoke/smoke.spec.ts --project=chromium"
     },
     "keywords": [],
     "author": "",
