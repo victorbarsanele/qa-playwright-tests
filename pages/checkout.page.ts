@@ -1,4 +1,5 @@
 import { Locator, Page, expect } from '@playwright/test';
+import { recoverFromVignette } from '../utils/navigation';
 
 export class CheckoutPage {
     constructor(private page: Page) {}
@@ -88,16 +89,22 @@ export class CheckoutPage {
     }
 
     async placeOrderAndOpenPayment() {
-        await this.placeOrderButton.click({ force: true });
-
-        await this.page.waitForURL(/\/payment|\/checkout#google_vignette/, {
-            timeout: 15000,
-        });
+        // Use Promise.all so the waitForURL listener is registered BEFORE the
+        // click fires. Without this, the navigation can complete (or start a
+        // redirect chain) before waitForURL starts observing, causing
+        // NS_BINDING_ABORTED in Firefox when a naked goto() is issued mid-flight.
+        await Promise.all([
+            this.page.waitForURL(/\/payment|google_vignette/, {
+                timeout: 20000,
+            }),
+            this.placeOrderButton.click({ force: true }),
+        ]);
 
         if (this.page.url().includes('google_vignette')) {
-            await this.page.goto('/payment');
+            await recoverFromVignette(this.page, '/payment', 20000);
         }
 
+        await this.page.waitForURL(/\/payment/, { timeout: 20000 });
         await expect(this.page).toHaveURL(/\/payment/);
     }
 

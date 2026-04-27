@@ -5,13 +5,16 @@ import { LoginPage } from '../../pages/login.page';
 import { ProductsPage } from '../../pages/products.page';
 import { createAccountViaApi } from '../../requests/auth.api';
 import { createRandomSignupUser } from '../../utils/user-factory';
+import { safeGoto } from '../../utils/navigation';
 
 async function loginWithFreshUser(page: any, request: any) {
     const user = createRandomSignupUser();
     const loginPage = new LoginPage(page);
 
     await createAccountViaApi(request, user);
-    await page.goto('/login');
+    // safeGoto drains any in-flight navigation before requesting /login,
+    // preventing NS_BINDING_ABORTED in Firefox after the API call resolves.
+    await safeGoto(page, '/login');
     await loginPage.login(user.email, user.password);
     await loginPage.verifyLoginSuccess();
 

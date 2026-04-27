@@ -1,4 +1,5 @@
 import { Locator, Page, expect } from '@playwright/test';
+import { recoverFromVignette } from '../utils/navigation';
 
 export class RegisterPage {
     constructor(private page: Page) {}
@@ -115,7 +116,17 @@ export class RegisterPage {
     async navigateToAccountForm(name: string, email: string) {
         await this.nameInput.fill(name);
         await this.emailInput.fill(email);
-        await this.clickWithFallback(this.registerButton);
+        // Promise.all ensures the URL-change listener is registered before the
+        // click fires, so we never miss the navigation event in Firefox.
+        await Promise.all([
+            this.page.waitForURL(/signup|google_vignette/, { timeout: 15000 }),
+            this.clickWithFallback(this.registerButton),
+        ]);
+        if (this.page.url().includes('google_vignette')) {
+            // The form was already submitted; recover to /signup where the
+            // server would have redirected after processing the registration.
+            await recoverFromVignette(this.page, '/signup');
+        }
         await expect(this.accountInformationHeading).toBeVisible({
             timeout: 15000,
         });

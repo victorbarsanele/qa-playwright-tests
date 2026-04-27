@@ -1,4 +1,5 @@
 import { Locator, Page, expect } from '@playwright/test';
+import { safeGoto, recoverFromVignette } from '../utils/navigation';
 
 export class ProductsPage {
     constructor(private page: Page) {}
@@ -51,7 +52,7 @@ export class ProductsPage {
     }
 
     async goToProductsPage() {
-        await this.page.goto('/products');
+        await safeGoto(this.page, '/products');
         await expect(this.page).toHaveURL(/\/products/);
         await expect(this.allProductsHeading).toBeVisible({ timeout: 15000 });
     }
@@ -122,7 +123,7 @@ export class ProductsPage {
         }
 
         if (this.page.url().includes('google_vignette')) {
-            await this.page.goto('/view_cart');
+            await recoverFromVignette(this.page, '/view_cart');
         }
 
         await expect(this.page).toHaveURL(/\/view_cart/);
