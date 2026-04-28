@@ -71,8 +71,35 @@ export class CheckoutPage {
     }
 
     async proceedToCheckoutFromCart() {
-        await this.clickWithFallback(this.proceedToCheckoutButton);
-        await this.page.waitForURL('**/checkout', { timeout: 15000 });
+        await this.proceedToCheckoutButton.waitFor({
+            state: 'visible',
+            timeout: 15000,
+        });
+
+        try {
+            await Promise.all([
+                this.page.waitForURL(/\/checkout|google_vignette/, {
+                    timeout: 20000,
+                }),
+                this.proceedToCheckoutButton.click({ timeout: 10000 }),
+            ]);
+        } catch {
+            await Promise.all([
+                this.page.waitForURL(/\/checkout|google_vignette/, {
+                    timeout: 20000,
+                }),
+                this.proceedToCheckoutButton.click({
+                    force: true,
+                    timeout: 10000,
+                }),
+            ]);
+        }
+
+        if (this.page.url().includes('google_vignette')) {
+            await recoverFromVignette(this.page, '/checkout', 20000);
+        }
+
+        await this.page.waitForURL(/\/checkout/, { timeout: 20000 });
     }
 
     async verifyCheckoutPageSections() {

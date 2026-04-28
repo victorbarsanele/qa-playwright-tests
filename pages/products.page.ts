@@ -53,6 +53,10 @@ export class ProductsPage {
 
     async goToProductsPage() {
         await safeGoto(this.page, '/products');
+        if (this.page.url().includes('google_vignette')) {
+            await recoverFromVignette(this.page, '/products');
+        }
+        await this.page.waitForURL(/\/products/, { timeout: 20000 });
         await expect(this.page).toHaveURL(/\/products/);
         await expect(this.allProductsHeading).toBeVisible({ timeout: 15000 });
     }
