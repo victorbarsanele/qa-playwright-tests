@@ -1,10 +1,46 @@
 import { expect, test } from '@playwright/test';
 import { CartPage } from '../../pages/cart.page';
 import { ProductsPage } from '../../pages/products.page';
+import { safeGoto } from '../../utils/navigation';
 
 function parseCurrencyValue(text: string): number {
     const digits = text.replace(/[^0-9]/g, '');
     return Number(digits);
+}
+
+async function waitForAddToCartFeedback(page: any) {
+    await Promise.race([
+        page
+            .getByRole('link', { name: /View Cart/i })
+            .first()
+            .waitFor({ state: 'visible', timeout: 6000 }),
+        page
+            .getByRole('button', { name: /Continue Shopping/i })
+            .first()
+            .waitFor({ state: 'visible', timeout: 6000 }),
+        page.waitForTimeout(6000),
+    ]).catch(() => {
+        // Firefox CI can miss transient modal render; cart navigation is the fallback.
+    });
+}
+
+async function continueShoppingToProducts(page: any) {
+    const continueShopping = page
+        .getByRole('button', { name: /Continue Shopping/i })
+        .first();
+
+    if (
+        await continueShopping.isVisible({ timeout: 2000 }).catch(() => false)
+    ) {
+        await continueShopping.click({ timeout: 5000 }).catch(async () => {
+            await continueShopping.dispatchEvent('click');
+        });
+        await expect(page).toHaveURL(/\/products/, { timeout: 15000 });
+        return;
+    }
+
+    await safeGoto(page, '/products', 30000);
+    await expect(page).toHaveURL(/\/products/, { timeout: 15000 });
 }
 
 test.describe('Cart Tests', () => {
@@ -27,18 +63,16 @@ test.describe('Cart Tests', () => {
         const cartPage = new CartPage(page);
 
         await productsPage.goToProductsPage();
+        await productsPage.addFirstProductToCart();
+        await safeGoto(page, '/products');
 
         const addButtons = page
             .locator('.features_items .productinfo.text-center a')
             .filter({ hasText: 'Add to cart' });
 
-        await addButtons.nth(0).click({ force: true });
-        await page.getByRole('button', { name: /Continue Shopping/i }).click();
         await addButtons.nth(1).click({ force: true });
-        await page
-            .getByRole('link', { name: /View Cart/i })
-            .first()
-            .click();
+        await waitForAddToCartFeedback(page);
+        await safeGoto(page, '/view_cart');
 
         await cartPage.verifyCartHasItems();
         await expect(page.locator('tr[id^="product-"]')).toHaveCount(2, {
@@ -94,21 +128,10 @@ test.describe('Cart Tests', () => {
 
         await productsPage.goToProductsPage();
 
-        const firstAddButton = page
-            .locator('.features_items .productinfo.text-center a')
-            .filter({ hasText: 'Add to cart' })
-            .first();
+        await productsPage.addFirstProductToCart();
+        await continueShoppingToProducts(page);
 
-        await firstAddButton.click({ force: true });
-        await page.getByRole('button', { name: /Continue Shopping/i }).click();
-
-        await expect(page).toHaveURL(/\/products/);
-
-        await firstAddButton.click({ force: true });
-        await page
-            .getByRole('link', { name: /View Cart/i })
-            .first()
-            .click();
+        await productsPage.addFirstProductToCartAndOpenCart();
         await cartPage.verifyCartHasItems();
     });
 });

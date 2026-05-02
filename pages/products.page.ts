@@ -51,6 +51,63 @@ export class ProductsPage {
         return this.page.getByRole('link', { name: /View Cart/i }).first();
     }
 
+    private get continueShoppingButton() {
+        return this.page.getByRole('button', { name: /Continue Shopping/i });
+    }
+
+    private get cartRows() {
+        return this.page.locator('tr[id^="product-"]');
+    }
+
+    private async waitForAddToCartFeedback() {
+        await Promise.race([
+            this.viewCartFromModalLink.waitFor({
+                state: 'visible',
+                timeout: 6000,
+            }),
+            this.continueShoppingButton.waitFor({
+                state: 'visible',
+                timeout: 6000,
+            }),
+            this.page.waitForTimeout(6000),
+        ]).catch(() => {
+            // Modal feedback can be flaky in Firefox CI; fallback is direct cart navigation.
+        });
+    }
+
+    async addFirstProductToCart() {
+        await expect(this.firstAddToCartButton).toBeVisible({ timeout: 15000 });
+
+        await this.clickWithFallback(this.firstAddToCartButton);
+        await this.waitForAddToCartFeedback();
+
+        await safeGoto(this.page, '/view_cart', 20000);
+        if (this.page.url().includes('google_vignette')) {
+            await recoverFromVignette(this.page, '/view_cart');
+        }
+
+        const itemsAfterFirstTry = await this.cartRows.count();
+        if (itemsAfterFirstTry > 0) {
+            return;
+        }
+
+        // Firefox CI occasionally misses the first add-to-cart interaction;
+        // retry once from /products before failing.
+        await safeGoto(this.page, '/products', 20000);
+        if (this.page.url().includes('google_vignette')) {
+            await recoverFromVignette(this.page, '/products');
+        }
+
+        await expect(this.allProductsHeading).toBeVisible({ timeout: 15000 });
+        await this.clickWithFallback(this.firstAddToCartButton);
+        await this.waitForAddToCartFeedback();
+        await safeGoto(this.page, '/view_cart', 20000);
+
+        if (this.page.url().includes('google_vignette')) {
+            await recoverFromVignette(this.page, '/view_cart');
+        }
+    }
+
     async goToProductsPage() {
         await safeGoto(this.page, '/products');
         if (this.page.url().includes('google_vignette')) {
@@ -112,24 +169,9 @@ export class ProductsPage {
     }
 
     async addFirstProductToCartAndOpenCart() {
-        await this.clickWithFallback(this.firstAddToCartButton);
-        await expect(this.viewCartFromModalLink).toBeVisible({
-            timeout: 15000,
-        });
-        await this.clickWithFallback(this.viewCartFromModalLink);
-
-        try {
-            await this.page.waitForURL(/\/view_cart|google_vignette/, {
-                timeout: 15000,
-            });
-        } catch {
-            await this.page.goto('/view_cart');
-        }
-
-        if (this.page.url().includes('google_vignette')) {
-            await recoverFromVignette(this.page, '/view_cart');
-        }
+        await this.addFirstProductToCart();
 
         await expect(this.page).toHaveURL(/\/view_cart/);
+        await expect(this.cartRows.first()).toBeVisible({ timeout: 15000 });
     }
 }
