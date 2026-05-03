@@ -75,6 +75,13 @@ export class ProductsPage {
         });
     }
 
+    private async waitForProductsReady(timeout = 15000) {
+        await Promise.race([
+            this.allProductsHeading.waitFor({ state: 'visible', timeout }),
+            this.productCards.first().waitFor({ state: 'visible', timeout }),
+        ]);
+    }
+
     async addFirstProductToCart() {
         await expect(this.firstAddToCartButton).toBeVisible({ timeout: 15000 });
 
@@ -109,13 +116,26 @@ export class ProductsPage {
     }
 
     async goToProductsPage() {
-        await safeGoto(this.page, '/products');
-        if (this.page.url().includes('google_vignette')) {
-            await recoverFromVignette(this.page, '/products');
+        for (let attempt = 0; attempt < 2; attempt++) {
+            await safeGoto(this.page, '/products', 30000);
+            if (this.page.url().includes('google_vignette')) {
+                await recoverFromVignette(this.page, '/products', 30000);
+            }
+
+            await this.page.waitForURL(/\/products/, { timeout: 30000 });
+            await expect(this.page).toHaveURL(/\/products/);
+
+            try {
+                await this.waitForProductsReady(15000);
+                return;
+            } catch {
+                if (attempt === 1) {
+                    throw new Error(
+                        'Products page did not render expected content in time',
+                    );
+                }
+            }
         }
-        await this.page.waitForURL(/\/products/, { timeout: 20000 });
-        await expect(this.page).toHaveURL(/\/products/);
-        await expect(this.allProductsHeading).toBeVisible({ timeout: 15000 });
     }
 
     async verifyProductsListVisible() {

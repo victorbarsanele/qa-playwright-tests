@@ -1,4 +1,5 @@
 import { Page, expect } from '@playwright/test';
+import { recoverFromVignette, safeGoto } from '../utils/navigation';
 
 export class LoginPage {
     constructor(private page: Page) {}
@@ -15,7 +16,26 @@ export class LoginPage {
         return this.page.getByTestId('login-button');
     }
 
+    private async ensureLoginFormReady() {
+        if (this.page.url().includes('google_vignette')) {
+            await recoverFromVignette(this.page, '/login', 30000);
+        }
+
+        if (await this.emailInput.isVisible().catch(() => false)) {
+            return;
+        }
+
+        await safeGoto(this.page, '/login', 30000);
+        if (this.page.url().includes('google_vignette')) {
+            await recoverFromVignette(this.page, '/login', 30000);
+        }
+
+        await expect(this.emailInput).toBeVisible({ timeout: 15000 });
+        await expect(this.passwordInput).toBeVisible({ timeout: 15000 });
+    }
+
     async login(email: string, password: string) {
+        await this.ensureLoginFormReady();
         await this.emailInput.fill(email);
         await this.passwordInput.fill(password);
         await this.loginButton.click();

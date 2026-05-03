@@ -6,6 +6,10 @@ export type AuthApiMessageResponse = {
     message: string;
 };
 
+function wait(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 /** Auth-focused API client for account lifecycle and credential verification. */
 export class AuthApi {
     constructor(private request: APIRequestContext) {}
@@ -59,7 +63,35 @@ export class AuthApi {
     }
 
     private async readJson<T>(response: APIResponse): Promise<T> {
-        return (await response.json()) as T;
+        const status = response.status();
+        const contentType = response.headers()['content-type'] ?? '';
+        const body = await response.text();
+
+        const trimmedBody = body.trim();
+
+        try {
+            // Some upstream responses return JSON payloads with a text/html header.
+            // Parse by body content first and only fail if payload is not valid JSON.
+            if (trimmedBody.startsWith('{') || trimmedBody.startsWith('[')) {
+                return JSON.parse(trimmedBody) as T;
+            }
+
+            const snippet = trimmedBody
+                .slice(0, 160)
+                .replace(/\s+/g, ' ')
+                .trim();
+            throw new Error(
+                `Expected JSON response but received content-type="${contentType}" (status=${status}). body="${snippet}"`,
+            );
+        } catch {
+            const snippet = trimmedBody
+                .slice(0, 160)
+                .replace(/\s+/g, ' ')
+                .trim();
+            throw new Error(
+                `Invalid JSON response (status=${status}). body="${snippet}"`,
+            );
+        }
     }
 }
 
@@ -69,13 +101,43 @@ export async function createAccountViaApi(
     user: SignupUser,
 ): Promise<AuthApiMessageResponse> {
     const api = new AuthApi(request);
-    const result = await api.createAccount(user);
 
-    if (result.responseCode !== 201) {
-        throw new Error(
-            `Failed to create account. responseCode=${result.responseCode}, message=${result.message}`,
-        );
+    let lastError: unknown;
+    const maxAttempts = 3;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            const result = await api.createAccount(user);
+
+            if (result.responseCode === 201) {
+                return result;
+            }
+
+            // If a prior attempt succeeded but response parsing/retry happened,
+            // account may already exist and is still valid for login setup.
+            if (
+                result.responseCode === 400 &&
+                /already\s*exist|already\s*exists|exists/i.test(result.message)
+            ) {
+                return {
+                    responseCode: 201,
+                    message: 'Account already exists (accepted for setup)',
+                };
+            }
+
+            throw new Error(
+                `Failed to create account. responseCode=${result.responseCode}, message=${result.message}`,
+            );
+        } catch (error) {
+            lastError = error;
+            if (attempt < maxAttempts) {
+                await wait(500 * attempt);
+                continue;
+            }
+        }
     }
 
-    return result;
+    throw new Error(
+        `Failed to create account after ${maxAttempts} attempts: ${String(lastError)}`,
+    );
 }

@@ -1,5 +1,5 @@
 import { Locator, Page, expect } from '@playwright/test';
-import { recoverFromVignette } from '../utils/navigation';
+import { recoverFromVignette, safeGoto } from '../utils/navigation';
 
 export class CheckoutPage {
     constructor(private page: Page) {}
@@ -142,6 +142,19 @@ export class CheckoutPage {
         expiryMonth: string;
         expiryYear: string;
     }) {
+        if (this.page.url().includes('google_vignette')) {
+            await recoverFromVignette(this.page, '/payment', 30000);
+        }
+
+        if (!(await this.nameOnCardInput.isVisible().catch(() => false))) {
+            await safeGoto(this.page, '/payment', 30000);
+            if (this.page.url().includes('google_vignette')) {
+                await recoverFromVignette(this.page, '/payment', 30000);
+            }
+        }
+
+        await expect(this.nameOnCardInput).toBeVisible({ timeout: 15000 });
+        await expect(this.cardNumberInput).toBeVisible({ timeout: 15000 });
         await this.nameOnCardInput.fill(details.nameOnCard);
         await this.cardNumberInput.fill(details.cardNumber);
         await this.cvcInput.fill(details.cvc);
