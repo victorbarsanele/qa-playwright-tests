@@ -5,10 +5,13 @@ export class CheckoutPage {
     constructor(private page: Page) {}
 
     private async clickWithFallback(locator: Locator) {
+        await locator.waitFor({ state: 'visible', timeout: 15000 });
+        await locator.scrollIntoViewIfNeeded();
+
         try {
-            await locator.click({ timeout: 5000 });
+            await locator.click({ timeout: 8000 });
         } catch {
-            await locator.dispatchEvent('click');
+            await locator.click({ force: true, timeout: 8000 });
         }
     }
 

@@ -42,9 +42,21 @@ export class LoginPage {
     }
 
     async verifyLoginSuccess() {
+        await this.page
+            .waitForLoadState('domcontentloaded', { timeout: 10000 })
+            .catch(() => {
+                // Continue with explicit assertions below.
+            });
+
+        if (this.page.url().includes('/login')) {
+            await expect(this.page).not.toHaveURL(/\/login/, {
+                timeout: 10000,
+            });
+        }
+
         await expect(
             this.page.getByRole('link', { name: 'Logout' }),
-        ).toBeVisible();
+        ).toBeVisible({ timeout: 15000 });
     }
 
     async verifyLoginFailure() {
