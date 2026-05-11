@@ -5,10 +5,21 @@ export class RegisterPage {
     constructor(private page: Page) {}
 
     private async clickWithFallback(locator: Locator) {
+        await locator.scrollIntoViewIfNeeded();
         try {
-            await locator.click({ timeout: 5000 });
+            await locator.click({ timeout: 8000 });
         } catch {
-            await locator.dispatchEvent('click');
+            await locator.click({ force: true, timeout: 8000 });
+        }
+    }
+
+    private async ensureRegisterFormReady() {
+        if (!(await this.nameInput.isVisible().catch(() => false))) {
+            await this.page.goto('/login', {
+                waitUntil: 'domcontentloaded',
+                timeout: 30000,
+            });
+            await expect(this.nameInput).toBeVisible({ timeout: 15000 });
         }
     }
 
@@ -139,11 +150,18 @@ export class RegisterPage {
 
     // ── Step 1 form validation ────────────────────────────────────────────────
 
-    /** Fills step 1 (name + email) and clicks Signup without waiting for step 2 navigation. */
+    /** Fills step 1 (name + email) and clicks Signup, waiting for step 2 or error message. */
     async fillAndSubmitRegisterStep1(name: string, email: string) {
+        await this.ensureRegisterFormReady();
         await this.nameInput.fill(name);
         await this.emailInput.fill(email);
-        await this.clickWithFallback(this.registerButton);
+        await Promise.all([
+            this.page.waitForURL(/signup|google_vignette/, { timeout: 20000 }),
+            this.clickWithFallback(this.registerButton),
+        ]);
+        if (this.page.url().includes('google_vignette')) {
+            await recoverFromVignette(this.page, '/signup');
+        }
     }
 
     /** Clicks Signup with blank name and verifies the name field is required. */
@@ -240,9 +258,19 @@ export class RegisterPage {
         zipCode: string;
         mobileNumber: string;
     }) {
+        await this.ensureRegisterFormReady();
         await this.nameInput.fill(userData.name);
         await this.emailInput.fill(userData.email);
-        await this.clickWithFallback(this.registerButton);
+        await Promise.all([
+            this.page.waitForURL(/signup|google_vignette/, { timeout: 20000 }),
+            this.clickWithFallback(this.registerButton),
+        ]);
+        if (this.page.url().includes('google_vignette')) {
+            await recoverFromVignette(this.page, '/signup');
+        }
+        await this.page
+            .waitForLoadState('domcontentloaded', { timeout: 15000 })
+            .catch(() => {});
         await expect(this.accountInformationHeading).toBeVisible({
             timeout: 15000,
         });

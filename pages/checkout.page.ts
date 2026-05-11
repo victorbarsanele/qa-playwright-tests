@@ -106,6 +106,9 @@ export class CheckoutPage {
     }
 
     async verifyCheckoutPageSections() {
+        await this.page
+            .waitForLoadState('domcontentloaded', { timeout: 15000 })
+            .catch(() => {});
         await expect(this.deliveryAddressHeading).toBeVisible({
             timeout: 15000,
         });
