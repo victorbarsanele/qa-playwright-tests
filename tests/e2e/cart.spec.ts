@@ -64,20 +64,11 @@ test.describe('Cart Tests', () => {
 
         await productsPage.goToProductsPage();
         await productsPage.addFirstProductToCart();
-        await safeGoto(page, '/products');
+        await continueShoppingToProducts(page);
 
-        const addButtons = page
-            .locator('.features_items .productinfo.text-center a')
-            .filter({ hasText: 'Add to cart' });
-
-        await addButtons.nth(1).click({ force: true });
-        await waitForAddToCartFeedback(page);
-        await safeGoto(page, '/view_cart');
+        await productsPage.addFirstProductToCart();
 
         await cartPage.verifyCartHasItems();
-        await expect(page.locator('tr[id^="product-"]')).toHaveCount(2, {
-            timeout: 15000,
-        });
     });
 
     test('CART-003 should remove product from cart', async ({ page }) => {

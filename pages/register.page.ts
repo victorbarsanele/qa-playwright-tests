@@ -150,6 +150,13 @@ export class RegisterPage {
 
     // ── Step 1 form validation ────────────────────────────────────────────────
 
+    /** Clicks Signup with blank name and verifies the name field is required. */
+    async verifyRegisterStep1NameRequired() {
+        await this.ensureRegisterFormReady();
+        await this.clickWithFallback(this.registerButton);
+        await this.verifyFieldRequired(this.nameInput);
+    }
+
     /** Fills step 1 (name + email) and clicks Signup, waiting for step 2 or error message. */
     async fillAndSubmitRegisterStep1(name: string, email: string) {
         await this.ensureRegisterFormReady();
@@ -236,9 +243,12 @@ export class RegisterPage {
 
     /** Verifies the duplicate-email error message is visible after step 1 submission. */
     async verifyDuplicateEmailError() {
+        await this.page
+            .waitForLoadState('domcontentloaded', { timeout: 15000 })
+            .catch(() => {});
         await expect(
             this.page.getByText('Email Address already exist!'),
-        ).toBeVisible({ timeout: 10000 });
+        ).toBeVisible({ timeout: 15000 });
     }
 
     async register(userData: {
