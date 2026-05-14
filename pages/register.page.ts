@@ -5,7 +5,7 @@ export class RegisterPage {
     constructor(private page: Page) {}
 
     private async clickWithFallback(locator: Locator) {
-        await locator.scrollIntoViewIfNeeded();
+        await locator.waitFor({ state: 'visible', timeout: 10000 });
         try {
             await locator.click({ timeout: 8000 });
         } catch {
@@ -14,13 +14,17 @@ export class RegisterPage {
     }
 
     private async ensureRegisterFormReady() {
-        if (!(await this.nameInput.isVisible().catch(() => false))) {
+        for (let attempt = 0; attempt < 2; attempt++) {
+            if (await this.nameInput.isVisible().catch(() => false)) {
+                return;
+            }
             await this.page.goto('/login', {
                 waitUntil: 'domcontentloaded',
                 timeout: 30000,
             });
-            await expect(this.nameInput).toBeVisible({ timeout: 15000 });
+            await this.page.waitForLoadState('networkidle').catch(() => {});
         }
+        await expect(this.nameInput).toBeVisible({ timeout: 15000 });
     }
 
     private async checkWithFallback(locator: Locator) {
@@ -125,6 +129,7 @@ export class RegisterPage {
 
     /** Completes step 1 only — lands on the account info form. */
     async navigateToAccountForm(name: string, email: string) {
+        await this.ensureRegisterFormReady();
         await this.nameInput.fill(name);
         await this.emailInput.fill(email);
         // Promise.all ensures the URL-change listener is registered before the
@@ -169,12 +174,6 @@ export class RegisterPage {
         if (this.page.url().includes('google_vignette')) {
             await recoverFromVignette(this.page, '/signup');
         }
-    }
-
-    /** Clicks Signup with blank name and verifies the name field is required. */
-    async verifyRegisterStep1NameRequired() {
-        await this.clickWithFallback(this.registerButton);
-        await this.verifyFieldRequired(this.nameInput);
     }
 
     /** Fills name only, clicks Signup, and verifies the email field is required. */

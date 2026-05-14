@@ -19,7 +19,7 @@ export default defineConfig({
     timeout: 60000,
     forbidOnly: !!(globalThis as any).process?.env?.CI,
     retries: (globalThis as any).process?.env?.CI ? 2 : 0,
-    workers: (globalThis as any).process?.env?.CI ? 1 : 2,
+    workers: 2,
     reporter: 'html',
     use: {
         baseURL: 'https://automationexercise.com',

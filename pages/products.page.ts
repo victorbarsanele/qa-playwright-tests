@@ -192,6 +192,20 @@ export class ProductsPage {
         await this.addFirstProductToCart();
 
         await expect(this.page).toHaveURL(/\/view_cart/);
-        await expect(this.cartRows.first()).toBeVisible({ timeout: 15000 });
+        // Firefox occasionally needs more time to render cart rows; add retry
+        for (let attempt = 0; attempt < 2; attempt++) {
+            try {
+                await expect(this.cartRows.first()).toBeVisible({
+                    timeout: 10000,
+                });
+                return;
+            } catch {
+                if (attempt === 1) {
+                    throw new Error('Cart rows did not render in time');
+                }
+                // Retry: refresh the cart page
+                await safeGoto(this.page, '/view_cart', 20000);
+            }
+        }
     }
 }

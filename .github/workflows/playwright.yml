@@ -93,7 +93,12 @@ jobs:
             - name: Install Playwright Browsers
               run: npx playwright install --with-deps
             - name: Run nightly full suite (${{ matrix.project }})
-              run: npm run test:full -- --project=${{ matrix.project }}
+              run: |
+                  if [ "${{ matrix.project }}" = "firefox" ]; then
+                    npm run test:full -- --project=firefox --workers=1
+                  else
+                    npm run test:full -- --project=${{ matrix.project }}
+                  fi
             - uses: actions/upload-artifact@v4
               if: failure() && !cancelled()
               with:
